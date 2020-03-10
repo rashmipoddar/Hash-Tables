@@ -18,7 +18,6 @@ class HashTable:
     def __init__(self, capacity):
         self.capacity = capacity  # Number of buckets in the hash table
         self.storage = [None] * capacity
-        self.count = 0
 
 
     def _hash(self, key):
@@ -56,24 +55,21 @@ class HashTable:
         Fill this in.
         '''
         index = self._hash_mod(key)
-        print('Index for insertion', index)
-        if self.count < self.capacity:
-            if self.storage[index] is None:
-                self.storage[index] = LinkedPair(key, value)
-                print(self.storage)
-                self.count +=1
+        if self.storage[index] is None:
+            self.storage[index] = LinkedPair(key, value)
+        else:
+            new_node = LinkedPair(key, value)
+            current = self.storage[index]
+            if current.key == key:
+                current.value = value
             else:
-                print('This index has already been used')
-                new_node = LinkedPair(key, value)
-                current = self.storage[index]
                 while current.next is not None:
+                    if current.next.key == key:
+                        current.next.value = value
                     current = current.next
-                current.next = new_node            
-        else: 
-            print('ERROR: maximum limit reached')
+                current.next = new_node
+        # print('Storage after completing insertion', self.storage)
         
-
-
 
     def remove(self, key):
         '''
@@ -85,14 +81,12 @@ class HashTable:
         '''
         index = self._hash_mod(key)
         if self.storage[index] is None:
-            print('The provided key does not exist')
             return None
         else:
             if self.storage[index].key == key:
                 self.storage[index] = None
                 return
             else:
-                print('The provided key does not exist')
                 return None
 
 
@@ -105,14 +99,18 @@ class HashTable:
         Fill this in.
         '''
         index = self._hash_mod(key)
-        print('index for retrieval', index)
         if self.storage[index] is None:
             return None
         else:
-            if self.storage[index].key == key:
-                return self.storage[index].value
+            current = self.storage[index]
+            if current.key == key:
+                return current.value
             else:
-                return None
+                while current.next:
+                    if current.next.key == key:
+                        return current.next.value
+                    current = current.next
+            return None
 
 
     def resize(self):
@@ -122,8 +120,15 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
-
+        old_storage = self.storage.copy()
+        self.capacity = self.capacity * 2
+        self.storage = [None] * self.capacity
+    
+        for bucket_item in old_storage:
+            current = bucket_item
+            while current:
+                self.insert(current.key, current.value)
+                current = current.next    
 
 
 if __name__ == "__main__":
@@ -133,24 +138,25 @@ if __name__ == "__main__":
     ht.insert("line_2", "Filled beyond capacity")
     ht.insert("line_3", "Linked list saves the day!")
     ht.insert("line_4", "Test insertion")
+    ht.insert("line_1", "new-val-0")
 
     print("")
 
     # Test storing beyond capacity
-    # print(ht.retrieve("line_1"))
-    # print(ht.retrieve("line_2"))
-    # print(ht.retrieve("line_3"))
+    print(ht.retrieve("line_1"))
+    print(ht.retrieve("line_2"))
+    print(ht.retrieve("line_3"))
 
     # Test resizing
-    # old_capacity = len(ht.storage)
-    # ht.resize()
-    # new_capacity = len(ht.storage)
+    old_capacity = len(ht.storage)
+    ht.resize()
+    new_capacity = len(ht.storage)
 
-    # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
 
     # Test if data intact after resizing
-    # print(ht.retrieve("line_1"))
-    # print(ht.retrieve("line_2"))
-    # print(ht.retrieve("line_3"))
+    print(ht.retrieve("line_1"))
+    print(ht.retrieve("line_2"))
+    print(ht.retrieve("line_3"))
 
     print("")
